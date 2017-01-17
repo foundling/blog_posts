@@ -159,52 +159,50 @@ And now, when you get around to using `has`, you can write this:
 
     ];
 
-    const range = (max) => [ ...Array(max).keys() ];
-    const parseDateString = (filename) => filename.split('_')[1].split('.')[0];
-    const belongsTo = (user) => (filename) => filename.split('_')[0] === user;
-    const inDateRange = (start, stop) => (dateString) => moment(dateString).isBetween(moment(start), moment(stop), null, '[]');
+    const range = (n) => [ ...Array(n).keys() ];
     const generateDateRange = (start, stop) => {
 
-        let [ startDate, stopDate ] = [ moment(start), moment(stop) ];
-        let diff = moment.duration(stopDate.diff(startDate)).days();
+        let startDate = moment(start);
+        let stopDate = moment(stop);
+        let diff = moment.duration( stopDate.diff(startDate) ).days();
 
         return range(diff + 1).map(offset => startDate.clone().add({ days: offset }).format('YYYY-MM-DD'));
         
     };
+
+    /* callbacks */
+    const belongsToUser = (user) => (filename) => filename.split('_')[0] === user;
+    const inDateRange = (start, stop) => (dateString) => moment(dateString).isBetween(moment(start), moment(stop), null, '[]');
+    const toDateString = (filename) => filename.split('_')[1].split('.')[0];
+
+    /* report functions */
     const getMissingDates = (user, filenames, { start, stop }) => {
 
         const idealDates = generateDateRange(start, stop);
-
         const userFilesInRange = filenames
-            .filter( belongsTo(user) )
-            .filter( filename => inDateRange(start, stop)(parseDateString(filename)) );
+            .filter( belongsToUser(user) )
+            .filter( filename => inDateRange(start, stop)(toDateString(filename)) );
 
         return idealDates
-            .filter(idealDate => !userFilesInRange.map(parseDateString).includes(idealDate));
+            .filter(idealDate => !userFilesInRange.map(toDateString).includes(idealDate));
 
     };
-    const missingDataReport = (users, filenames, dateRange) => {
 
-        const reportSchema = {
-            dateRange: null,
-            users: {}
-        };
+    const report = (users, filenames, dateRange) => {
 
-        console.log();
+        const schema = { dateRange: null, users: {} };
 
         const run = () => { 
 
             let data = users.reduce((obj, user) => {
-
                 obj['dateRange'] = dateRange; 
                 obj['users'][user] = { 
                     'missingDates': getMissingDates(user, filenames, dateRange),
-                    'files': filenames.filter(belongsTo(user))
+                    'files': filenames.filter(belongsToUser(user))
                 };
 
                 return obj;
-
-            }, reportSchema);
+            }, schema);
 
             return data;
 
@@ -214,6 +212,19 @@ And now, when you get around to using `has`, you can write this:
 
     };
 
-    const data = missingDataReport(users, filenames, { start: '2016-12-01', stop: '2016-12-15' }).run();
-    console.log(JSON.stringify(data, null, 2));
+    /* basic tests */
+    assert(range(5).length === 5);
+    assert(toDateString('test_2016-12-01.json') === '2016-12-01'); 
+    assert(generateDateRange('2016-12-01','2016-12-05').length === 5);
+    assert(generateDateRange('2016-12-01','2016-12-05').includes('2016-12-01'));
+    assert(generateDateRange('2016-12-01','2016-12-05').includes('2016-12-02'));
+    assert(generateDateRange('2016-12-01','2016-12-05').includes('2016-12-03'));
+    assert(generateDateRange('2016-12-01','2016-12-05').includes('2016-12-04'));
+    assert(generateDateRange('2016-12-01','2016-12-05').includes('2016-12-05'));
+    assert(belongsToUser('test')('test_2016-12-01.json'));
 
+    /* run report */
+    const data = report(users, filenames, { start: '2016-12-01', stop: '2016-12-15' }).run();
+
+    /* log results */
+    console.log(JSON.stringify(data, null, 2));
