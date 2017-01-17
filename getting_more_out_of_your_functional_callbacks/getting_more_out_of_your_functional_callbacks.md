@@ -20,7 +20,7 @@ On a code-hygiene level, I'm giving each callback a name that expresses the comp
 
 This code is clear enough, but sometimes we might want more out of our callbacks. `filter`'s callback can only work on a single input that filter hands to it. Let's imagine that the `X` in `hasX` or the `Y` in `toY` could be parameterized. Then we could separate the property-checking code (the `has` part) from the property-specificying code (the `X` part). But so far, everything `hasX` uses to do its work is contained within a single execution context. How can we parameterize `X`?
 
-# Enter Scope
+## Enter Scope
 
 A first step would be to simply refer to an outer parameter from within the `hasX` function definition. Like this:
 
@@ -75,10 +75,6 @@ And finally, we can use it like this:
         .length();
 
 This is just as readable as the snippet I originally offered, but it's more capable. The trick here is that I'm calling `has` inside of the invocation of filter, which gets evaluated and then passed to filter. `has(a)` will become a function that now contains `a` in its internal environment and can still accept the proper and final argument from filter as filter iterates through the input array.  In a figurative sense, I like to think of this as compiling two execution contexts into one. 
-
-## Benefits for Testing
-
-I should mention that if you are working with objects like dates, this method becomes especially useful because all of your input is passed in as parameters.  I hope to demonstrate this below in a real-life example of this technique for expanding your callbacks.
 
 ## A Real Example
 
