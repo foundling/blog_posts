@@ -1,5 +1,3 @@
-# Getting More Out of Your Functional Callbacks
-
 In JavaScript, functional array methods like `map`, `filter`, `reduce`, `some` and `every` can bring a lot of clarity and brevity to the parts of your code that transform data.
 
 This is what I mean:
