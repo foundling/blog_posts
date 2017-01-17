@@ -81,50 +81,6 @@ This is just as readable as the snippet I originally offered, but it's more capa
 Imagine I have a list of filenames that have the format `<name>_<datestring>.json`. And let’s say I want to find any files for any person in a list for whom there is missing data in some date range. Let’s say the date range is ‘2016-12-01’ through ‘2016-12-15’ and it is inclusive. And let’s say that the names I care about are ‘bob’,‘alice’, and ‘fred’. Here’s how I could use this technique:
 
     const moment = require('moment');
-
-    const filenames = [
-
-        'alice_2016-12-07.json',
-        'alice_2016-12-04.json',
-        'alice_2016-12-09.json',
-        'alice_2016-12-01.json',
-        'alice_2016-12-03.json',
-        'alice_2016-12-11.json',
-        'bob_2016-12-03.json',
-        'bob_2016-12-09.json',
-        'bob_2016-12-02.json'
-
-    ];
-
-    const inRange = (start, stop) => (date) => moment(date).isBetween(moment(start),moment(stop));
-
-    filenames
-        .filter()
-
-I should note that I'm using ES6 syntax to express this in a much more concise manner.  It may not always be more readable to use ES6 syntax, so please don't consider it a silver bullet. But in this case I find it makes the code concise yet readable. This would be the ES5 alternative:
-
-    function inRange (start, stop) {
-        return function (date) {
-            return moment(date).isBetween(moment(start), moment(stop));
-        }
-    }
-
-This definition syntax is generalizable, so if you wanted to, you could write a function that returns a function that returns a function:
-
-    const fn1 = (a) => (b) => (c) => max(a, b, c);
-
-And now, when you get around to using `has`, you can write this:
-
-    dataset
-        .filter(hasX('Z'))
-        .map(toY)
-        .some(isZ);
-
-## A Real Example
-
-Imagine I have a list of filenames that have the format `<name>_<datestring>.json`. And let’s say I want to find any files for any person in a list for whom there is missing data in some date range. Let’s say the date range is ‘2016-12-01’ through ‘2016-12-15’ and it is inclusive. And let’s say that the names I care about are ‘bob’,‘alice’, and ‘fred’. Here’s how I could use this technique:
-
-    const moment = require('moment');
     const assert = require('assert');
     const users = [ 'alice', 'bob', 'fred' ];
     const filenames = [ 
