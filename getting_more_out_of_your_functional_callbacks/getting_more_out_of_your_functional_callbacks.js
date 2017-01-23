@@ -16,32 +16,41 @@ const filenames = [
 
 ];
 
+/* utilities for generating dates */
 const range = (n) => [ ...Array(n).keys() ];
 const generateDateRange = (start, stop) => {
 
     let startDate = moment(start);
     let stopDate = moment(stop);
-    let diff = moment.duration( stopDate.diff(startDate) ).days();
+    let dateOffset = moment.duration( stopDate.diff(startDate) ).days();
 
-    return range(diff + 1).map(offset => startDate.clone().add({ days: offset }).format('YYYY-MM-DD'));
+    return range(dateOffset + 1).map(offset => {
+
+        return startDate
+            .clone()
+            .add({ days: offset })
+            .format('YYYY-MM-DD');
+
+    });
     
 };
 
-/* callbacks */
+/* functional method callbacks */
 const belongsToUser = (user) => (filename) => filename.split('_')[0] === user;
 const inDateRange = (start, stop) => (dateString) => moment(dateString).isBetween(moment(start), moment(stop), null, '[]');
 const toDateString = (filename) => filename.split('_')[1].split('.')[0];
 
 /* report functions */
-const getMissingDates = (user, filenames, { start, stop }) => {
+const getMissingDates = (user, filenames, dateRange) => {
 
-    const idealDates = generateDateRange(start, stop);
-    const userFilesInRange = filenames
+    const idealDates = generateDateRange(dateRange.start, dateRange.stop);
+    const userDatesInRange = filenames
         .filter( belongsToUser(user) )
-        .filter( filename => inDateRange(start, stop)(toDateString(filename)) );
+        .map(toDateString)
+        .filter( inDateRange(dateRange.start, dateRange.stop) );
 
     return idealDates
-        .filter(idealDate => !userFilesInRange.map(toDateString).includes(idealDate));
+        .filter(idealDate => !userDatesInRange.includes(idealDate));
 
 };
 
@@ -52,10 +61,10 @@ const report = (users, filenames, dateRange) => {
     const run = () => { 
 
         let data = users.reduce((obj, user) => {
-            obj['dateRange'] = dateRange; 
-            obj['users'][user] = { 
-                'missingDates': getMissingDates(user, filenames, dateRange),
-                'files': filenames.filter(belongsToUser(user))
+            obj.dateRange = dateRange; 
+            obj.users[user] = { 
+                missingDates: getMissingDates(user, filenames, dateRange),
+                files: filenames.filter(belongsToUser(user))
             };
 
             return obj;
