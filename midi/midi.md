@@ -5,7 +5,7 @@ and composing" - Kraftwerk, *Pocket Calculator*
 
 ## PART I: What is MIDI?
 
-MIDI is short for Musical Instrument Digital Interface, a communication protocol as well as a hardware / software spec  that makes enables communication between MIDI-enabled digital instruments. With MIDI you can establish a network of instruments that are synced in tempo and that are able to communicate with and control each other in user-programmed ways.
+MIDI is short for Musical Instrument Digital Interface, a communication protocol as well as a hardware / software spec  that enables communication between MIDI-enabled digital instruments. With MIDI you can establish a network of instruments that are synced in tempo and that are able to communicate with and control each other in user-programmed ways.
 
 The data protocol aspect of MIDI provides a standardized message format that can be received and interpreted by any MIDI-enabled instrument.  For example, by pressing down on a MIDI keyboard's key, one could send a 'note-on' signal along with information about the key pressed, like the key number and velocity of the key press, to its target device (e.g., a computer running Logic), where the sound is produced using these parameters.
 
@@ -33,7 +33,7 @@ Today, the benefits are even greater. You can do your composing on an airplane w
 
 ## MIDI Messages
 
-A MIDI device can control its target device by sending MIDI messages across a MIDI cable connecting its OUT port to the target device's IN port. The MIDI messages are transported serially as an asynchronous stream of 10-bit words, where the first and last bits are markers to keep the data in time sync and the middle 8 bytes are the MIDI messages, either status or data information.  In the stream, a status byte is usually followed by 1 or 2 data bytes.
+A MIDI device can control its target device by sending MIDI messages across a MIDI cable connecting its OUT port to the target device's IN port. MIDI messages are transmitted serially as an asynchronous stream of 10-bit words, where the first and last bits are markers to keep the data in time sync and the middle 8 bytes are the MIDI messages, either status or data information.  In the stream, a status byte is usually followed by 1 or 2 data bytes.
 
 [ diagram ]
 
@@ -48,9 +48,18 @@ In order to interpret the MIDI messages, it's important to understand the binary
 
 ### Interpreting Status and Data Bytes
 
-A Midi Message, as mentioned previously, is a 10-bit word, where the first and last bits are framing bits used to provide synchronization information over an asynchronous transmission.  Concentrating on the 8 bits in between them, we can determine whether a packet is a status byte or a data byte by whether its MSB (most significant bit) is a 1 or a 0.  Status bytes have a 1 as their MSB, while data bytes have a 0. The remaining 7 bits, which allow values in the range 0 - 127, account for the containing data.
+A MIDI message, as mentioned previously, is a 10-bit word, where the first and last bits are framing bits providing synchronization information over an asynchronous transmission.  Concentrating on the middle 8 bits, we can tell whether a packet is a status byte or a data byte by whether its MSB (most significant bit) is a 1 or a 0.  Status bytes have a 1 as their MSB, while data bytes have a 0. The remaining 7 bits, which allow values in the range 0 - 127, account for the containing data.
 
-## PART II: The Web Midi API
+Before we dive into deciphering the status and data bytes' content, here is the MIDI data corresponding to a middle C played at full velocity:
+
+
+    1001_1111 --> status byte for MIDI channel 16
+        0011_1100 --> data byte, key 60
+            0111_1111 --> data byte, velocity is 127
+                
+                    
+
+                    ## PART II: The Web Midi API
 
 
 
@@ -67,4 +76,3 @@ To access the Web MIDI API, we need to access the `requestMIDIAccess` method on 
 http://www.nyu.edu/classes/bello/FMT_files/8_MIDIcomms.pdf
 http://www.harfesoft.de/aixphysik/sound/midi/pages/whatmidi.html
 http://www.electronics.dit.ie/staff/tscarff/Music_technology/midi/midi_messages.htm
-
