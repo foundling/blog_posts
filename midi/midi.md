@@ -3,9 +3,9 @@
 "I'm controlling,
 and composing" - Kraftwerk, *Pocket Calculator*
 
-## PART I: What is MIDI?
+## PART I: MIDI as an architectural tool for composition
 
-MIDI is short for Musical Instrument Digital Interface, a communication protocol as well as a hardware / software spec  that enables communication between MIDI-enabled digital instruments. With MIDI you can establish a network of instruments that are synced in tempo and that are able to communicate with and control each other in user-programmed ways.
+Many people think that MIDI is the source of the cheesy sounds emanating from that archaic geocities page. That is General MIDI, an expansion on MIDI that came later. MIDI itself is a communication protocol as well as a hardware / software spec  that enables communication between MIDI-enabled digital instruments. With MIDI you can establish a network of instruments that are synced in tempo and that are able to communicate with and control each other in user-programmed ways.
 
 The data protocol aspect of MIDI provides a standardized message format that can be received and interpreted by any MIDI-enabled instrument.  For example, by pressing down on a MIDI keyboard's key, one could send a 'note-on' signal along with information about the key pressed, like the key number and velocity of the key press, to its target device (e.g., a computer running Logic), where the sound is produced using these parameters.
 
@@ -26,6 +26,12 @@ MIDI can communicate a variety of parameters such as pitch, velocity, volume and
 [Video]()
 
 ## History 
+
+https://en.wikipedia.org/wiki/CV/gate
+
+People were using instruments to control other instruments before MIDI was invented. MIDI was initially a more efficient means to expand this practice to polyphonic synthesizers, as they realized that the CV/Gate mechanism for controlling monophonic synths didn't scale to polyphonic synths.
+
+Let's consider how an analogue synth works. An originating sound source -- an oscillating frequency -- is transmitted through a series of sound modules connected by way of patch cables. Each of these modules affect their incoming sound in some specialized way. Modules include envelope filters, resonance filters, low frequency oscillators, pitch, etc. Each module receives and can transmit the pitch and note start information through CV and Gate/Trigger voltage signals. CV, or control voltage, controls the pitch. Gate/Trigger controls the note start information (note-on).
 
 Initially, MIDI provided a standard way for musicians and composers to connect keyboard-based instruments made by different manufacturers without needing extra proprietary hardware and software.  The MIDI language encodes formal parameters over time that make it possible to recreate a sound in a connected MIDI-capable sound generation device. The draw is increased intercompatibility as well as efficiency: since it doesn't generate sound itself, but merely the formal parameters used to generate a sound, MIDI data requires about 1/100 of the information required to represent a sound as an actual sound file. And since the parameters used in constructing the sound are separate from the sound itself, a MIDI-encoded performance is essentially separate from and the generated sound, and thus experimentation with or temporal modification of the sound can be done after the fact.
 
