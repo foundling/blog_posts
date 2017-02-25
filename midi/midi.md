@@ -69,15 +69,19 @@ To dispel any confusion up front, MIDI is not:
  -
  -  ### Binary Notation Primer
  -
- -  If you want to handle MIDI messages in an informed way, it's important to understand how binary numbers work.
+ -  In order to capture MIDI data in your browser, it's important to understand how to work with binary numbers. Let's talk about that now:
  -
- -  The binary number system is a positional number system that represents values as increasing powers of two.  The benefit of this in modeling problems using computers is the simplicity that emerges when using voltage to communicate information.  If we can transmit voltage in a manner where two states can be clearly distinguished, then that voltage can be converted into bits, and bits can be used to indicate presence or absence. We can arrive at large enough representational space by chaining bits.  
+ -  The binary number system is a positional number system that represents values as a a sequences digits comprised of `1`s and `0`s. The positional part means that the value that a digit represents is dependent upon its position in the sequence. Using only two values at the lowest level in a computer system that transforms voltage into digital information is beneficial because of its simplicity.  A value is either 1 or 0, which communicates either presence or absence.    If we can control the transmission of voltage in a manner where only two states exist and can be clearly distinguished from one another, then that voltage can be mapped directly to a 1 or a 0. And by combining sequences of `1`s and `0`s, we can build more sophisticated representations.
  -
- -  In the case of numbers, we can scan the number from right to left, going from the power of 0 upward by 1 each time, and each time ask, do I include this number in the total sum of numbers? If the digit is a `0`, the answer is no. Otherwise, the answer is yes, and we have to do some simple multiplication to calculate what that `1` represents given the context of its position within the string of bits.
+ -  ### Values are compositions of positional representations
  -
- -  #### Binary Examples
+ -  The decimal value `123` is a composition of `100`, `20`, and `3`. Thinking about values as compositions of other values will be useful when working with less familiar number systems like binary or hexadecimal.
  -
- -  Let's work with a few examples. The general procedure is this:  We will be looking at each number in order from left to right.  At each place, we consider its place value to be the number base (2, 10, 16, etc) to a power that increases by one in each position leftward. The powers will always start at `0`.
+ -  Generally speaking, we can scan the number from right to left, going from the power of 0 upward by 1 each time, and each time ask, do I include this number in the total sum of numbers? If the digit is a `0`, the answer is no. Otherwise, the answer is yes, and we have to do some simple multiplication to calculate what that `1` represents given the context of its position within the string of bits.
+ -
+ -  #### A Decimal Example
+ -
+ -  Let's work with a few examples. The general procedure is this:  We will be looking at each number in order from right to left.  At each place, we consider its place value to be the radix, or base, (`2`, `10`, `16`, etc) to a power that increases by one in each position leftward. The powers will always start at `0`.
  -
  -  Let's start with a decimal number to illustrate that the form of reasoning is identical across bases. 
  -
@@ -85,107 +89,128 @@ To dispel any confusion up front, MIDI is not:
  -
  -  Here's our decimal number: `123`. 
  -
- -  The `3` in `123` means that this number is composed of (or includes) the value that is the base `10` to some power that is one greater than the power to the right (if it exists), and that resulting value is finally multiplied by `3`.  We end up with 3 because `(10^0) x 3` is 3.  
+ -  The `3` in `123` means that this number is composed of (or includes) the value that is the base `10` to some power that is one greater than the power to the right (if it exists), and that resulting value is finally multiplied by `3`.  Since this is the first number on the right, the power is `0`.  We end up with 3 because `(10^0) x 3` is 3.  
  -
- -  The `2` in `123`. Means that `123` is composed of `10` to the power one power greater than the power of the digit to the right, times 2. This gives us `(10^1) x 2`, or 20.
+ -  The `2` in `123` means that `123` is composed of `10` to next power (which is `1`), times 2. This gives us `(10^1) x 2`, or 20.
  -
- -  And `1` means that this number is composed of the value `(10^2) X 1`, or 100.  
+ -  And the `1` in `123` means that `123` is composed of the value `10` to the next power (which is `2`), times `1`. So we have `(10^2) x 1`, or 100.  
  -
  -  We can take each value of which `123` is composed and add them up:  `3 + 20 + 100` equals `123`, our original number.
  -
- -  #### Example 2: binary to decimal
+ -  ### Binary Examples
+ -
+ -  #### Example 1: binary to decimal
  -
  -  Here is our binary number: `1010`.
  -
  -  This can be interpreted in the same form as the decimal above, except that instead of exponentiating `10` by some increasing power, we exponentiate `2` by some increasing power.  
  -
- -  `(base ^ increasing power) x current digit` 
+ -  Let's apply our general formula
+ -
+ -  `(base^increasing power) x current digit`
+ -
+ -  using `2` for base.
+ -
  -  `(2^0) x 0` equals `0`.
  -  `(2^1) x 1` equals `2`.
  -  `(2^2) x 0` equals `0`.
  -  `(2^3) x 1` equals `8`.
  -
- -  Then we sum the composite values:  `0 + 2 + 8 + 0` equals `10`.
+ -  Summing the composite values `0`,`2`,`0` and `8` , we get `10`.
  -
  -  #### Example 3: decimal to binary
  -
- -  Let's take the decimal value `123` and write it in binary. The first step here is to figure out how many places we'll need to hold this number in binary.  since `2^7` is `128`, we won't need more than `7` binary places to store this value.
+ -  Let's take the decimal value `123` and write it in binary.  This requires us to work in the opposite direction, figuring out which powers of two compose the number, `123`. 
  -
- -  Here's our placeholder binary sequence: `[ ] [ ] [ ] [ ] [ ] [ ] [ ]`. 
+ -  The first step here is to figure out how many places we'll need to hold this number in binary.  since `2^7` is `128`, we won't need more than `7` binary places to store this value.
  -
- -  When figuring out binary representations from decimal representations, we want to start by finding the highest power of two that fits into `123` and slot that power of two in our placeholder string as a `1`. Then we subtract that power of two from our sum and repeat until we reach `0`.
+ -  Here's our placeholder binary sequence: 
  -
- -  Since `2^7` is `128` and `2^6` is `64`, we can put a `1` in the place where the power of `6` digit goes. This indicates that the total value is partially composed of `2^6`.
+ -  `[ ] [ ] [ ] [ ] [ ] [ ] [ ]`. 
  -
- -  We then subtract `64` from `123` to get our new value under consideration: `59`.
+ -  When figuring out binary representations from decimal representations, we want to do the following:
  -
- -  Our placeholder sequence: `[1] [] [ ] [ ] [ ] [ ] [ ]`.
+ -   - Find the highest power of two that fits into the decimal value `123`, our current value
+ -    - Place a `1` in the correct location in our placeholder string so that the presence of this power of two is represented.  
+ -     - Subtract that power of two from our sum and repeat 
+ -      - If our new decimal value is `0`, we are finished.
+ -       - Any value in the placeholder string that is not a `1` is a `0`.
+ -        
+ -        The highest power of `2` that is equal to or less than `123` is `6`, so we can put a `1` in the place where the power of `6` digit goes. This indicates that the total value is partially composed of `2^6`.
  -
- -  Let's repeat the process: the largest power of `2` that is less than or equal to `59` is `32`, which is `2^5`.  So in the binary place where the power is `5`, we place a `1`.
+ -        We then subtract `64` from `123` to get our new value under consideration: `59`.
  -
- -  Our placeholder sequence: `[1] [1] [ ] [ ] [ ] [ ] [ ]`.
- -  Our new value to consider is `59 - 32`, or `27`.
+ -        Our placeholder sequence is now: 
  -
- -  The highest power of `2` that is less than or equal to `27` is `16`, which is `2^4`.  This means a `1` goes in the slot for the power of `4`.
+ -        `[1] [] [ ] [ ] [ ] [ ] [ ]` 
  -
- -  Our placeholder sequence: `[1] [1] [1] [ ] [ ] [ ] [ ]`.
- -  Our new value to consider is `11`.
+ -        and our new decimal number is not `0`, so we repeat the process.
  -
- -  The highest power of `2` that fits into `11` is `3`, which is `2^3`, or `8`.  So we place a `1` in the `3` power slot in our sequence.
+ -        The largest power of `2` that is less than or equal to `59` is `32`, which is `2^5`.  So in the binary place where the power is `5`, we place a `1`.
  -
- -  Our placeholder sequence:  `[1] [1] [1] [1] [ ] [ ] [ ]`.
- -  Our new value to consider is `11 - 8`, or `3`.
+ -        Our placeholder sequence: `[1] [1] [ ] [ ] [ ] [ ] [ ]`.
+ -        Our new value to consider is `59 - 32`, or `27`.
  -
- -  The highest power of `2` that fits into `3` is `1`, which is `2^1`, or `2`.  So we place a `1` in the `1` power slot in our sequence.
+ -        The highest power of `2` that is less than or equal to `27` is `16`, which is `2^4`.  This means a `1` goes in the slot for the power of `4`.
  -
- -  Our placeholder sequence:  `[1] [1] [1] [1] [ ] [1] [ ]`.
- -  Our new value to consider is `3 - 2`, or `1`.
+ -        Our placeholder sequence: `[1] [1] [1] [ ] [ ] [ ] [ ]`.
+ -        Our new value to consider is `11`.
  -
- -  The highest power of `2` that fits into `1` is `0`, because anything to the `0th` power is `1`.  So we place a `1` in the `0` power slot in our sequence, which is all the way to the right.
+ -        The highest power of `2` that fits into `11` is `3`, which is `2^3`, or `8`.  So we place a `1` in the `3` power slot in our sequence.
  -
- -  Our placeholder sequence:  `[1] [1] [1] [1] [0] [1] [1]`.
- -  Our new value to consider is `0`, so we are finished.
+ -        Our placeholder sequence:  `[1] [1] [1] [1] [ ] [ ] [ ]`.
+ -        Our new value to consider is `11 - 8`, or `3`.
  -
- -  Anything that isn't a `1` in binary is necessarily a `0`, so our final binary representation of the decimal number `123` is `1111011`.
+ -        The highest power of `2` that fits into `3` is `1`, which is `2^1`, or `2`.  So we place a `1` in the `1` power slot in our sequence.
  -
+ -        Our placeholder sequence:  `[1] [1] [1] [1] [ ] [1] [ ]`.
+ -        Our new value to consider is `3 - 2`, or `1`.
  -
- -  #### Hexidecimal
+ -        The highest power of `2` that fits into `1` is `0`, because anything to the `0th` power is `1`.  So we place a `1` in the `0` power slot in our sequence, which is all the way to the right.
  -
- -  #### MSB, LSB
+ -        Our placeholder sequence:  `[1] [1] [1] [1] [0] [1] [1]`.
+ -        Our new value to consider is `0`, so we are finished.
  -
- -  ### Interpreting Status and Data Bytes
- -
- -  A MIDI message, as mentioned previously, is a 10-bit word, where the first and last bits are framing bits providing synchronization information over an asynchronous transmission.  Concentrating on the middle 8 bits, we can tell whether a packet is a status byte or a data byte by whether its MSB (most significant bit) is a 1 or a 0.  Status bytes have a 1 as their MSB, while data bytes have a 0. The remaining 7 bits, which allow values in the range 0 - 127, account for the containing data.
- -
- -  Before we dive into deciphering the status and data bytes' content, here is the MIDI data corresponding to a middle C played at full velocity:
- -
- -
- -      byte 1: 1001_1111 --> status byte for MIDI channel 16
- -          byte 2: 0011_1100 --> data byte, key 60
- -              byte 3: 0111_1111 --> data byte, velocity is 127
+ -        Anything that isn't a `1` in binary is necessarily a `0`, so our final binary representation of the decimal number `123` is `1111011`.
  -
  -
- -              ## PART II: The Web Midi API
+ -        #### Hexidecimal
+ -
+ -        #### MSB, LSB
+ -
+ -        ### Interpreting Status and Data Bytes
+ -
+ -        A MIDI message, as mentioned previously, is a 10-bit word, where the first and last bits are framing bits providing synchronization information over an asynchronous transmission.  Concentrating on the middle 8 bits, we can tell whether a packet is a status byte or a data byte by whether its MSB (most significant bit) is a 1 or a 0.  Status bytes have a 1 as their MSB, while data bytes have a 0. The remaining 7 bits, which allow values in the range 0 - 127, account for the containing data.
+ -
+ -        Before we dive into deciphering the status and data bytes' content, here is the MIDI data corresponding to a middle C played at full velocity:
  -
  -
- -              Now that we've gone probably further than we needed to into the details of MIDI itself, we are informed enough to start using the Web MIDI API in the browser.
+ -            byte 1: 1001_1111 --> status byte for MIDI channel 16
+ -              byte 2: 0011_1100 --> data byte, key 60
+ -                  byte 3: 0111_1111 --> data byte, velocity is 127
  -
- -              ### The Interface
  -
- -              The Web MIDI API provides low-level access to connected MIDI devices.  In a nutshell:
+ -                  ## PART II: The Web Midi API
  -
- -               -  We can connect a device to our computer via USB or a MIDI interface and detect it from within the JavaScript runtime environment in our web browser.
- -                - We can listen for MIDI events on a detected device
- -                 - We can get the byte-level data from those events
  -
- -                 To access the Web MIDI API, we need to access the `requestMIDIAccess` method on the global `navigator` object. This returns a `Promise`.  Because requesting MIDI access from the browser presents security implications, the user needs to enable web midi via a browser-prompt, although this can vary depending on the host of the browser/user agent.
+ -                  Now that we've gone probably further than we needed to into the details of MIDI itself, we are informed enough to start using the Web MIDI API in the browser.
  -
- -                 ### Detecting MIDI Inputs and Outputs
- -                 ### Getting Information About your Midi Device
- -                 ### Midi 
+ -                  ### The Interface
  -
- -                 #### Sources:
- -                 http://www.nyu.edu/classes/bello/FMT_files/8_MIDIcomms.pdf
- -                 http://www.harfesoft.de/aixphysik/sound/midi/pages/whatmidi.html
- -                 http://www.electronics.dit.ie/staff/tscarff/Music_technology/midi/midi_messages.htm
- -                 http://digitalsoundandmusic.com/chapters/ch6/
+ -                  The Web MIDI API provides low-level access to connected MIDI devices.  In a nutshell:
+ -
+ -                   -  We can connect a device to our computer via USB or a MIDI interface and detect it from within the JavaScript runtime environment in our web browser.
+ -                    - We can listen for MIDI events on a detected device
+ -                     - We can get the byte-level data from those events
+ -
+ -                     To access the Web MIDI API, we need to access the `requestMIDIAccess` method on the global `navigator` object. This returns a `Promise`.  Because requesting MIDI access from the browser presents security implications, the user needs to enable web midi via a browser-prompt, although this can vary depending on the host of the browser/user agent.
+ -
+ -                     ### Detecting MIDI Inputs and Outputs
+ -                     ### Getting Information About your Midi Device
+ -                     ### Midi 
+ -
+ -                     #### Sources:
+ -                     http://www.nyu.edu/classes/bello/FMT_files/8_MIDIcomms.pdf
+ -                     http://www.harfesoft.de/aixphysik/sound/midi/pages/whatmidi.html
+ -                     http://www.electronics.dit.ie/staff/tscarff/Music_technology/midi/midi_messages.htm
+ -                     http://digitalsoundandmusic.com/chapters/ch6/
