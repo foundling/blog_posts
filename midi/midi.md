@@ -1,84 +1,191 @@
-# MIDI for Everyone
+# MIDI for Programmers
 
 "I'm controlling,
 and composing" - Kraftwerk, *Pocket Calculator*
 
-## PART I: MIDI as an architectural tool for composition
+In this article, I'm going to ground some JavaScript experiments with the recently available WebMIDI API within the history and design concerns of MIDI technology. It was introduced to the market in 1983 as way to connect polyphonic digital instruments together, but since has vastly outgrown that initial use case.  Now that a MIDI implementation is in Google Chrome, you can control audio and visuals in your browser via MIDI messages.
 
-Many people think that MIDI is the source of the cheesy sounds emanating from that archaic geocities page. That is General MIDI, an expansion on MIDI that came later. MIDI itself is a communication protocol as well as a hardware / software spec  that enables communication between MIDI-enabled digital instruments. With MIDI you can establish a network of instruments that are synced in tempo and that are able to communicate with and control each other in user-programmed ways.
+To dispel any confusion up front, MIDI is not:
 
-The data protocol aspect of MIDI provides a standardized message format that can be received and interpreted by any MIDI-enabled instrument.  For example, by pressing down on a MIDI keyboard's key, one could send a 'note-on' signal along with information about the key pressed, like the key number and velocity of the key press, to its target device (e.g., a computer running Logic), where the sound is produced using these parameters.
-
-The hardware specification aspect  provides a common physical format for MIDI components and includes MIDI cabling, physical ports and internal mechanisms that receive and send voltage and convert it to data in the digital domain). [This part needs work.]
-
-Here's what the back of a MIDI-capable MPC1000 sampler looks like:
-
-[Image of MIDI device]()
-
-## MIDI instruments
-
-Common MIDI-enabled devices include keyboards, pianos, guitars and even wind instruments. Since MIDI itself is a protocol and an interface to convert voltage to note data in the digital domain, the possibilities are quite vast. Additionally, today, USB MIDI controllers are very common due to their low cost and portability. A MIDI controller doesn't produce any sound itself but sends MIDI data to external sound generators, where the sound can be rendered according to the control data contained in the MIDI messages. MIDI controllers commonly come in the form of a keyboard or a grid of pads and knobs akin to what you would find on a sampler. 
-
-## MIDI in Action
-
-MIDI can communicate a variety of parameters such as pitch, velocity, volume and envelope information. It also communicates clock source information. In the video below, I demonstrate the effect of configuring the clock source on a digital sampler as the tempo source and then set the clock-source on a digital keyboard to receive this master tempo and sync with it. Watch at the end as I drop the tempo on the sampler: the tempo on the keyboard drops as well.
-
-[Video]()
-
-## History 
-
-https://en.wikipedia.org/wiki/CV/gate
-
-People were using instruments to control other instruments before MIDI was invented. MIDI was initially a more efficient means to expand this practice to polyphonic synthesizers, as they realized that the CV/Gate mechanism for controlling monophonic synths didn't scale to polyphonic synths.
-
-Let's consider how an analogue synth works. An originating sound source -- an oscillating frequency -- is transmitted through a series of sound modules connected by way of patch cables. Each of these modules affect their incoming sound in some specialized way. Modules include envelope filters, resonance filters, low frequency oscillators, pitch, etc. Each module receives and can transmit the pitch and note start information through CV and Gate/Trigger voltage signals. CV, or control voltage, controls the pitch. Gate/Trigger controls the note start information (note-on).
-
-Initially, MIDI provided a standard way for musicians and composers to connect keyboard-based instruments made by different manufacturers without needing extra proprietary hardware and software.  The MIDI language encodes formal parameters over time that make it possible to recreate a sound in a connected MIDI-capable sound generation device. The draw is increased intercompatibility as well as efficiency: since it doesn't generate sound itself, but merely the formal parameters used to generate a sound, MIDI data requires about 1/100 of the information required to represent a sound as an actual sound file. And since the parameters used in constructing the sound are separate from the sound itself, a MIDI-encoded performance is essentially separate from and the generated sound, and thus experimentation with or temporal modification of the sound can be done after the fact.
-
-Today, the benefits are even greater. You can do your composing on an airplane with just a small MIDI controller and a laptop. You could play a MIDI saxophone. Or, with the drop in the cost of microcontrollers, you could capture physical phenomena like weather data read from physical sensors and convert it into MIDI data to generate music via the weather.
-
-## MIDI Messages
-
-A MIDI device can control its target device by sending MIDI messages across a MIDI cable connecting its OUT port to the target device's IN port. MIDI messages are transmitted serially as an asynchronous stream of 10-bit words, where the first and last bits are markers to keep the data in time sync and the middle 8 bytes are the MIDI messages, either status or data information.  In the stream, a status byte is usually followed by 1 or 2 data bytes.
-
-[ diagram ]
-
-In order to interpret the MIDI messages, it's important to understand the binary and hexidecimal number systems. I'm going to briefly explain how those work as a review but since we'll be putting this to direct use in Part II, if you're not comfortable with converting from binary to hexidecimal and vice versa, you might find [this article]() useful.
-
-### Binary and Hexidecimal Numbers
-
-#### Binary
-#### Hexidecimal
-
-#### MSB, LSB
-
-### Interpreting Status and Data Bytes
-
-A MIDI message, as mentioned previously, is a 10-bit word, where the first and last bits are framing bits providing synchronization information over an asynchronous transmission.  Concentrating on the middle 8 bits, we can tell whether a packet is a status byte or a data byte by whether its MSB (most significant bit) is a 1 or a 0.  Status bytes have a 1 as their MSB, while data bytes have a 0. The remaining 7 bits, which allow values in the range 0 - 127, account for the containing data.
-
-Before we dive into deciphering the status and data bytes' content, here is the MIDI data corresponding to a middle C played at full velocity:
-
-
-    1001_1111 --> status byte for MIDI channel 16
-        0011_1100 --> data byte, key 60
-            0111_1111 --> data byte, velocity is 127
-                
-                    
-
-                    ## PART II: The Web Midi API
-
-
-
-### The Interface
-The Web MIDI API provides low-level access to connected MIDI devices, which provides the raw MIDI information and not what that could mean in musical terms.
-
-To access the Web MIDI API, we need to access the `requestMIDIAccess` method on the global `navigator` object. This returns a `Promise`.  Because requesting MIDI access from the browser presents security implications, the user needs to enable web midi via a browser-prompt, although this can vary depending on the host of the browser/user agent.
-
-### Detecting MIDI Inputs and Outputs
-### Getting Information About your Midi Device
-### Midi 
-
-#### Sources:
-http://www.nyu.edu/classes/bello/FMT_files/8_MIDIcomms.pdf
-http://www.harfesoft.de/aixphysik/sound/midi/pages/whatmidi.html
-http://www.electronics.dit.ie/staff/tscarff/Music_technology/midi/midi_messages.htm
+ - Those cheesy-sounding compositions that you hear on that geocities page that was last updated in August of 1994. That is the work of an infamous extension of MIDI called General MIDI.
+ -  - Digital Audio.  MIDI doesn't transmit sound itself, just the parameters that can be used to create sound.
+ -
+ -
+ -  ## MIDI is About Control
+ -
+ -  At its purest, MIDI is a protocol and hardware implementation designed to enable communication between MIDI-enabled devices.  With MIDI you can establish a network of instruments that are synced in tempo and that are able to control and be controlled by each other in user-programmed ways.  If this idea seems somewhat hard to pin down, that's because the possibilities for application and the shear number of network configurations are quite vast. And it doesn't restrict you to controlling sound.  Extensions to the MIDI spec have provided for alternate uses such as light automation for live entertainment.
+ -
+ -  ### A Protocol
+ -
+ -  MIDI is a protocol that provides a standardized message format that can be received and interpreted by any MIDI-enabled instrument.  For example, by pressing down on a MIDI keyboard's key, one might send a 'note-on' signal along with information about the event, like the key number and velocity of the key press, to a target device (e.g., a computer running Logic or ProTools) where those sound parameters are used in the actual production of sound.
+ -
+ -  ### A Hardware Spec
+ -
+ -  The hardware specification aspect  provides a common physical format for MIDI components and includes MIDI cabling, physical ports and internal mechanisms that receive and send voltage and convert it to data in the digital domain). [This part needs work.]
+ -
+ -  Here's what the back of a MIDI-capable MPC1000 sampler looks like:
+ -
+ -  ![An MPC1000 is a MIDI-capable device](http://www.midifan.com/image/nnews/2003/MPC1000-rear-lg.jpg)
+ -
+ -  It has two MIDI OUT ports that can be used to transmit MIDI data to other systems.  It also has two MIDI IN ports on which it can receive MIDI data from two separate MIDI systems.
+ -
+ -  ## MIDI Instruments
+ -
+ -  Common MIDI-enabled devices include keyboards, samplers, pianos, guitars and even wind instruments. Since MIDI itself is a protocol and an interface to convert voltage to note data in the digital domain, the possibilities are quite vast. Additionally, today, USB MIDI controllers are very common due to their low cost and portability. A MIDI controller doesn't produce any sound itself but sends MIDI data to external sound generators, where the sound can be rendered according to the control data contained in the MIDI messages. MIDI controllers commonly come in the form of a keyboard or a grid of pads and knobs akin to what you would find on a sampler. 
+ -
+ -  ## A Demonstration
+ -
+ -  MIDI can communicate a variety of parameters such as pitch, velocity, volume and envelope information. It also communicates clock source information. In the video below, I demonstrate the effect of configuring the clock source on a digital sampler as the master tempo source and then set the clock-source on a digital keyboard to receive this master tempo and sync with it. Watch at the end as I drop the tempo on the sampler: the tempo on the keyboard drops as well.
+ -
+ -  [Me Demonstrating MIDI]()
+ -
+ -  ## Historical Motivations for MIDI
+ -
+ -  ### Polyphony
+ -
+ -  People used instruments to control other instruments before MIDI was invented.  The mechanism, known as CV/Gate, transmitted voltage as pitch and note duration as trigger (on/off state).  While the CV gate model worked well enough for monophonic synthesizers that could only produce a single signal at a time, in the late 70s and early 80s, musicians and composers started to gravitate toward polyphonic instruments that could produce multiple, simultaneous notes or signals.  The motivation for MIDI was partly the fact that the mechanisms for controlling and modulating actual current along its path from the sound generator to the output doesn't scale for polyphonic instruments.  Monophonic synthesizers already take enough space, no?
+ -
+ -  ![A rack of monosynth modules](http://dt7v1i9vyp3mf.cloudfront.net/styles/news_large/s3/imagelibrary/b/buchlacbuchla200evergreen.jpg?K6oDDEWlAdE8tAu2Q1Expkphg5nmWZPx=&itok=vAwshZDJ)
+ -
+ -  Let's think roughly about the requirements for polyphonic notes controlled via CV/Gate. If `n` is the number of notes in a polyphonic device and `h` is the hardware/space requirements for the transmission of one note's signal via CV/Gate to an external sound module, then your hardware requirements are at least `h` X `n` if you want to control multiple simultaneous notes on an external system. That turned out to be quite impractical, since the amount of equipment and space a monosynth fanatic requires to live a happy life looks unreasonable enough as it is.
+ -
+ -  MIDI was a way to work around this limitation, instead providing a lightweight way to transmit 16 separate channels of data that could convey polyphonic note information over a single cable.  While the note data transmitted isn't truly simultaneous, the 31250 bps baud rate (bits per second) is fast enough for most applications that the effect on the human ear is simultaneity.
+ -
+ -  ### Compatibility
+ -
+ -  Another motivation, one that the preeminent synth designers of the day (Dave Smith of Sequential Circuits, Ikutaru Kakehashi of Roland) had specifically in mind, was to provide a standard way for musicians and composers to connect synthesizers made by different manufacturers without needing extra proprietary hardware and software.
+ -
+ -  ### Efficiency
+ -
+ -  The MIDI language encodes formal parameters over time that make it possible to recreate a sound in a connected MIDI-capable sound generation device. The draw is a radically increased compatibility as well as efficiency: since it doesn't generate sound itself, but merely the formal parameters used to generate a sound, MIDI data requires about 1/100 of the information required to represent a sound as an actual sound file. And since the parameters used in constructing the sound are separate from the sound itself, a MIDI-encoded performance is essentially separate from and the generated sound, and thus experimentation with or temporal modification of the sound can be done after the fact.
+ -
+ -  Today, the benefits are even greater. You can do your composing on an airplane with just a small MIDI controller and a laptop. You could play a MIDI saxophone. Or, with the drop in the cost of microcontrollers, you could capture physical phenomena like weather data read from physical sensors and convert it into MIDI data to generate music via the weather.
+ -
+ -  ## MIDI Messages
+ -
+ -  A MIDI device can control its target device by sending MIDI messages across a MIDI cable connecting its OUT port to the target device's IN port. MIDI messages are transmitted serially as an asynchronous stream of 10-bit words, where the first and last bits are markers to keep the data in time sync and the middle 8 bits are the MIDI message, which can be either a status byte or a data byte.  In the stream, a status byte is usually followed by 1 or 2 data bytes.
+ -
+ -  In order to interpret the MIDI messages, it's important to understand the binary and hexidecimal number systems. I'm going to briefly explain how those work as a review but since we'll be putting this to direct use in Part II, if you want more practice converting binary, you might find [this article]() useful.
+ -
+ -  ### Binary Notation Primer
+ -
+ -  If you want to handle MIDI messages in an informed way, it's important to understand how binary numbers work.
+ -
+ -  The binary number system is a positional number system that represents values as increasing powers of two.  The benefit of this in modeling problems using computers is the simplicity that emerges when using voltage to communicate information.  If we can transmit voltage in a manner where two states can be clearly distinguished, then that voltage can be converted into bits, and bits can be used to indicate presence or absence. We can arrive at large enough representational space by chaining bits.  
+ -
+ -  In the case of numbers, we can scan the number from right to left, going from the power of 0 upward by 1 each time, and each time ask, do I include this number in the total sum of numbers? If the digit is a `0`, the answer is no. Otherwise, the answer is yes, and we have to do some simple multiplication to calculate what that `1` represents given the context of its position within the string of bits.
+ -
+ -  #### Binary Examples
+ -
+ -  Let's work with a few examples. The general procedure is this:  We will be looking at each number in order from left to right.  At each place, we consider its place value to be the number base (2, 10, 16, etc) to a power that increases by one in each position leftward. The powers will always start at `0`.
+ -
+ -  Let's start with a decimal number to illustrate that the form of reasoning is identical across bases. 
+ -
+ -  #### Example 1
+ -
+ -  Here's our decimal number: `123`. 
+ -
+ -  The `3` in `123` means that this number is composed of (or includes) the value that is the base `10` to some power that is one greater than the power to the right (if it exists), and that resulting value is finally multiplied by `3`.  We end up with 3 because `(10^0) x 3` is 3.  
+ -
+ -  The `2` in `123`. Means that `123` is composed of `10` to the power one power greater than the power of the digit to the right, times 2. This gives us `(10^1) x 2`, or 20.
+ -
+ -  And `1` means that this number is composed of the value `(10^2) X 1`, or 100.  
+ -
+ -  We can take each value of which `123` is composed and add them up:  `3 + 20 + 100` equals `123`, our original number.
+ -
+ -  #### Example 2: binary to decimal
+ -
+ -  Here is our binary number: `1010`.
+ -
+ -  This can be interpreted in the same form as the decimal above, except that instead of exponentiating `10` by some increasing power, we exponentiate `2` by some increasing power.  
+ -
+ -  `(base ^ increasing power) x current digit` 
+ -  `(2^0) x 0` equals `0`.
+ -  `(2^1) x 1` equals `2`.
+ -  `(2^2) x 0` equals `0`.
+ -  `(2^3) x 1` equals `8`.
+ -
+ -  Then we sum the composite values:  `0 + 2 + 8 + 0` equals `10`.
+ -
+ -  #### Example 3: decimal to binary
+ -
+ -  Let's take the decimal value `123` and write it in binary. The first step here is to figure out how many places we'll need to hold this number in binary.  since `2^7` is `128`, we won't need more than `7` binary places to store this value.
+ -
+ -  Here's our placeholder binary sequence: `[ ] [ ] [ ] [ ] [ ] [ ] [ ]`. 
+ -
+ -  When figuring out binary representations from decimal representations, we want to start by finding the highest power of two that fits into `123` and slot that power of two in our placeholder string as a `1`. Then we subtract that power of two from our sum and repeat until we reach `0`.
+ -
+ -  Since `2^7` is `128` and `2^6` is `64`, we can put a `1` in the place where the power of `6` digit goes. This indicates that the total value is partially composed of `2^6`.
+ -
+ -  We then subtract `64` from `123` to get our new value under consideration: `59`.
+ -
+ -  Our placeholder sequence: `[1] [] [ ] [ ] [ ] [ ] [ ]`.
+ -
+ -  Let's repeat the process: the largest power of `2` that is less than or equal to `59` is `32`, which is `2^5`.  So in the binary place where the power is `5`, we place a `1`.
+ -
+ -  Our placeholder sequence: `[1] [1] [ ] [ ] [ ] [ ] [ ]`.
+ -  Our new value to consider is `59 - 32`, or `27`.
+ -
+ -  The highest power of `2` that is less than or equal to `27` is `16`, which is `2^4`.  This means a `1` goes in the slot for the power of `4`.
+ -
+ -  Our placeholder sequence: `[1] [1] [1] [ ] [ ] [ ] [ ]`.
+ -  Our new value to consider is `11`.
+ -
+ -  The highest power of `2` that fits into `11` is `3`, which is `2^3`, or `8`.  So we place a `1` in the `3` power slot in our sequence.
+ -
+ -  Our placeholder sequence:  `[1] [1] [1] [1] [ ] [ ] [ ]`.
+ -  Our new value to consider is `11 - 8`, or `3`.
+ -
+ -  The highest power of `2` that fits into `3` is `1`, which is `2^1`, or `2`.  So we place a `1` in the `1` power slot in our sequence.
+ -
+ -  Our placeholder sequence:  `[1] [1] [1] [1] [ ] [1] [ ]`.
+ -  Our new value to consider is `3 - 2`, or `1`.
+ -
+ -  The highest power of `2` that fits into `1` is `0`, because anything to the `0th` power is `1`.  So we place a `1` in the `0` power slot in our sequence, which is all the way to the right.
+ -
+ -  Our placeholder sequence:  `[1] [1] [1] [1] [0] [1] [1]`.
+ -  Our new value to consider is `0`, so we are finished.
+ -
+ -  Anything that isn't a `1` in binary is necessarily a `0`, so our final binary representation of the decimal number `123` is `1111011`.
+ -
+ -
+ -  #### Hexidecimal
+ -
+ -  #### MSB, LSB
+ -
+ -  ### Interpreting Status and Data Bytes
+ -
+ -  A MIDI message, as mentioned previously, is a 10-bit word, where the first and last bits are framing bits providing synchronization information over an asynchronous transmission.  Concentrating on the middle 8 bits, we can tell whether a packet is a status byte or a data byte by whether its MSB (most significant bit) is a 1 or a 0.  Status bytes have a 1 as their MSB, while data bytes have a 0. The remaining 7 bits, which allow values in the range 0 - 127, account for the containing data.
+ -
+ -  Before we dive into deciphering the status and data bytes' content, here is the MIDI data corresponding to a middle C played at full velocity:
+ -
+ -
+ -      byte 1: 1001_1111 --> status byte for MIDI channel 16
+ -          byte 2: 0011_1100 --> data byte, key 60
+ -              byte 3: 0111_1111 --> data byte, velocity is 127
+ -
+ -
+ -              ## PART II: The Web Midi API
+ -
+ -
+ -              Now that we've gone probably further than we needed to into the details of MIDI itself, we are informed enough to start using the Web MIDI API in the browser.
+ -
+ -              ### The Interface
+ -
+ -              The Web MIDI API provides low-level access to connected MIDI devices.  In a nutshell:
+ -
+ -               -  We can connect a device to our computer via USB or a MIDI interface and detect it from within the JavaScript runtime environment in our web browser.
+ -                - We can listen for MIDI events on a detected device
+ -                 - We can get the byte-level data from those events
+ -
+ -                 To access the Web MIDI API, we need to access the `requestMIDIAccess` method on the global `navigator` object. This returns a `Promise`.  Because requesting MIDI access from the browser presents security implications, the user needs to enable web midi via a browser-prompt, although this can vary depending on the host of the browser/user agent.
+ -
+ -                 ### Detecting MIDI Inputs and Outputs
+ -                 ### Getting Information About your Midi Device
+ -                 ### Midi 
+ -
+ -                 #### Sources:
+ -                 http://www.nyu.edu/classes/bello/FMT_files/8_MIDIcomms.pdf
+ -                 http://www.harfesoft.de/aixphysik/sound/midi/pages/whatmidi.html
+ -                 http://www.electronics.dit.ie/staff/tscarff/Music_technology/midi/midi_messages.htm
+ -                 http://digitalsoundandmusic.com/chapters/ch6/
