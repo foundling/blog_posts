@@ -3,17 +3,17 @@
 "I'm controlling,
 and composing" - Kraftwerk, *Pocket Calculator*
 
-In this article, I'm going to ground some JavaScript experiments with the recently available WebMIDI API within the history and design concerns of MIDI technology. It was introduced to the market in 1983 as way to connect polyphonic digital instruments together, but since has vastly outgrown that initial use case.  Now that a MIDI implementation is in Google Chrome, you can control audio and visuals in your browser via MIDI messages.
+In this article, I'm going to ground some JavaScript experiments with the recently available WebMIDI API within the history and design concerns of MIDI technology. MIDI was formalized in 1983 and since its inception it has become a predominant tool in not only music performance and composition but also non-musical areas such as visual and light orchestration. Google Chrome's implementation of MIDI has been around for a couple years now and offers a fairly simple gateway into controlling audio and visuals in your browser via MIDI messages.
 
 To dispel any confusion up front, MIDI is not:
 
- - Those cheesy-sounding compositions that you hear on that geocities page that was last updated in August of 1994. That is the work of an infamous extension of MIDI called General MIDI.
+ - Those cheesy sounds that you hear on that geocities page that was last updated in August of 1994. That type of 'MIDI' has much more to do with the tension between mass production and the death of quality (well, more specifically, the MIDI extension called General MIDI).
  -  - Digital Audio.  MIDI doesn't transmit sound itself, just the parameters that can be used to create sound.
  -
  -
  -  ## MIDI is About Control
  -
- -  At its purest, MIDI is a protocol and hardware implementation designed to enable communication between MIDI-enabled devices.  With MIDI you can establish a network of instruments that are synced in tempo and that are able to control and be controlled by each other in user-programmed ways.  If this idea seems somewhat hard to pin down, that's because the possibilities for application and the shear number of network configurations are quite vast. And it doesn't restrict you to controlling sound.  Extensions to the MIDI spec have provided for alternate uses such as light automation for live entertainment.
+ -  At its purest, MIDI is a protocol and hardware/software specification designed to enable communication between MIDI-enabled devices.  With MIDI you can establish a network of instruments that are synced in tempo and that are able to control and be controlled by each other in user-programmed ways.  If this idea seems somewhat hard to pin down, that's because the possibilities for application and the shear number of network configurations are quite vast. And it doesn't restrict you to controlling sound.  Extensions to the MIDI spec have provided for alternate uses such as light automation for live entertainment.
  -
  -  ### A Protocol
  -
@@ -43,33 +43,45 @@ To dispel any confusion up front, MIDI is not:
  -
  -  ### Polyphony
  -
- -  People used instruments to control other instruments before MIDI was invented.  The mechanism, known as CV/Gate, transmitted voltage as pitch and note duration as trigger (on/off state).  While the CV gate model worked well enough for monophonic synthesizers that could only produce a single signal at a time, in the late 70s and early 80s, musicians and composers started to gravitate toward polyphonic instruments that could produce multiple, simultaneous notes or signals.  The motivation for MIDI was partly the fact that the mechanisms for controlling and modulating actual current along its path from the sound generator to the output doesn't scale for polyphonic instruments.  Monophonic synthesizers already take enough space, no?
+ -  People have been using intermediary technology to control the performance of music long before MIDI was conceived.  The immediate predecessor of MIDI was a mechanism known as CV/Gate which transmits voltage as pitch and note duration as a gate or 'trigger' which communicates an on or off state.  While the CV gate model worked well enough for monophonic synthesizers that produced a single note at a time, in the late 70s and early 80s, musicians and composers started to gravitate toward polyphonic instruments that could produce multiple, simultaneous notes or signals.  The motivation for MIDI was partly the fact that the mechanisms for controlling and modulating actual current along its path from the sound generator to the output doesn't scale for polyphonic instruments.  Monophonic synthesizers alone already take enough space, no?
  -
  -  ![A rack of monosynth modules](http://dt7v1i9vyp3mf.cloudfront.net/styles/news_large/s3/imagelibrary/b/buchlacbuchla200evergreen.jpg?K6oDDEWlAdE8tAu2Q1Expkphg5nmWZPx=&itok=vAwshZDJ)
  -
- -  Let's think roughly about the requirements for polyphonic notes controlled via CV/Gate. If `n` is the number of notes in a polyphonic device and `h` is the hardware/space requirements for the transmission of one note's signal via CV/Gate to an external sound module, then your hardware requirements are at least `h` X `n` if you want to control multiple simultaneous notes on an external system. That turned out to be quite impractical, since the amount of equipment and space a monosynth fanatic requires to live a happy life looks unreasonable enough as it is.
+ -  Let's think roughly about the requirements for polyphonic notes controlled via CV/Gate. If `n` is the number of notes in a polyphonic device and `h` is the hardware/space requirements for the transmission of one note's signal via CV/Gate to an external sound module, then your hardware requirements are at least `h x n` if you want to control multiple simultaneous notes on an external system. That turned out to be quite impractical, since the increase in components meant higher complexity, higher production cost, greater failure rate, and greater space requirements.
  -
- -  MIDI was a way to work around this limitation, instead providing a lightweight way to transmit 16 separate channels of data that could convey polyphonic note information over a single cable.  While the note data transmitted isn't truly simultaneous, the 31250 bps baud rate (bits per second) is fast enough for most applications that the effect on the human ear is simultaneity.
+ -  MIDI was a light-weight way to work around this limitation. Instead of control voltages,  it transmitted 16 separate channels of data across a single cable from one MIDI device to another. And that information could represent polyphonic notes.  While the note data transmitted isn't truly simultaneous, the 31250 bps baud rate (bits per second) was fast enough for most applications that the effect on the human ear resulted in simultaneity.
  -
  -  ### Compatibility
  -
- -  Another motivation, one that the preeminent synth designers of the day (Dave Smith of Sequential Circuits, Ikutaru Kakehashi of Roland) had specifically in mind, was to provide a standard way for musicians and composers to connect synthesizers made by different manufacturers without needing extra proprietary hardware and software.
+ -  Another motivation, one that the preeminent synth designers of the day (Dave Smith of Sequential Circuits, Ikutaru Kakehashi of Roland, and others ... the historical details are anything but static, even to Dave Smith) had specifically in mind, was to provide a standard way for musicians and composers to connect synthesizers made by different manufacturers without needing extra proprietary hardware and software.
  -
  -  ### Efficiency
  -
- -  The MIDI language encodes formal parameters over time that make it possible to recreate a sound in a connected MIDI-capable sound generation device. The draw is a radically increased compatibility as well as efficiency: since it doesn't generate sound itself, but merely the formal parameters used to generate a sound, MIDI data requires about 1/100 of the information required to represent a sound as an actual sound file. And since the parameters used in constructing the sound are separate from the sound itself, a MIDI-encoded performance is essentially separate from and the generated sound, and thus experimentation with or temporal modification of the sound can be done after the fact.
+ -  The MIDI language encodes formal parameters over time that make it possible to recreate a sound in a connected MIDI-capable sound generation device. The draw is compatibility as well as efficiency: since it doesn't generate sound itself, but merely the language used to generate a sound, MIDI data requires about 1/100 of the information required to represent a sound as an actual sound file.  And since the parameters used in constructing the sound are separate from the sound itself, a MIDI-encoded performance is essentially separate from and the generated sound, and thus experimentation with the sound and temporal modification of the event sequence can be done after the fact.
  -
- -  Today, the benefits are even greater. You can do your composing on an airplane with just a small MIDI controller and a laptop. You could play a MIDI saxophone. Or, with the drop in the cost of microcontrollers, you could capture physical phenomena like weather data read from physical sensors and convert it into MIDI data to generate music via the weather.
+ -  Today, the benefits are even greater. You can do your composing on an airplane with just a small MIDI controller and a laptop. You could play a MIDI saxophone. Or, with the drop in the cost of micro-controllers, you could read data from the physical world, transform it into MIDI data, and render that via an instrument.
  -
  -  ## MIDI Messages
  -
- -  A MIDI device can control its target device by sending MIDI messages across a MIDI cable connecting its OUT port to the target device's IN port. MIDI messages are transmitted serially as an asynchronous stream of 10-bit words, where the first and last bits are markers to keep the data in time sync and the middle 8 bits are the MIDI message, which can be either a status byte or a data byte.  In the stream, a status byte is usually followed by 1 or 2 data bytes.
+ -  ### An asynchronous transmission
  -
- -  In order to interpret the MIDI messages, it's important to understand the binary and hexidecimal number systems. I'm going to briefly explain how those work as a review but since we'll be putting this to direct use in Part II, if you want more practice converting binary, you might find [this article]() useful.
+ -  A MIDI device can control its target device by sending MIDI messages across a MIDI cable connecting its OUT port to the target device's IN port. MIDI messages are transmitted asynchronously (as discrete events) and serially in packets of 10-bit groups (called *words*) at a maximum rate of 3125 bits per second (the baud rate).  This baud rate is fairly low, even by the standards of 1983, but the proponents of the MIDI spec considered it essential for MIDI's success in the midst of a growing market of mass-produced digital instruments. The transmission rate is low enough to be remain relatively uncomplicated from an engineering perspective, but fast enough in *most* circumstances to remain reliable and convincing to the human ear.
+ -
+ -  ### Succinct Messages
+ -
+ -  Once consequence of this relatively low baud rate is that MIDI messages are quite succinct, containing multiple pieces of information within a single byte.  
+ -
+ -  The MIDI message byte when transmitted along the cable is technically 10-bits long, but the first and last bit indicate the boundaries of the MIDI message. This is so that during asynchronous transmission of MIDI data, the packets boundaries are interpreted correctly on the receiving end and thus are decoded into their intended MIDI messages.  Because the start and stop bits are only used in ensuring accurate transmission of data (indicating when the MIDI event starts and when it stops), they are stripped from the MIDI byte long before we receive it through the WebMIDI API. 
+ -
+ -  The middle 8 bits are the actual MIDI message of significance to a JavaScript programmer. This resulting byte can be either a status byte or a data byte.  A MIDI stream consists of status bytes that are usually followed by 1 or 2 data bytes.
+ -
+ -  Status Byte Table
+ -
+ -  Data Byte Table
+ -
+ -  I mentioned that MIDI messages are quite succinct.  Because of this, I'm going to review the binary number system and discuss ways to work with bytes so that we have the necessary skills to extract the information from these status and data bytes.
  -
  -  ### Binary Notation Primer
- -
- -  In order to capture MIDI data in your browser, it's important to understand how to work with binary numbers. Let's talk about that now:
  -
  -  The binary number system is a positional number system that represents values as a a sequences digits comprised of `1`s and `0`s. The positional part means that the value that a digit represents is dependent upon its position in the sequence. Using only two values at the lowest level in a computer system that transforms voltage into digital information is beneficial because of its simplicity.  A value is either 1 or 0, which communicates either presence or absence.    If we can control the transmission of voltage in a manner where only two states exist and can be clearly distinguished from one another, then that voltage can be mapped directly to a 1 or a 0. And by combining sequences of `1`s and `0`s, we can build more sophisticated representations.
  -
