@@ -186,10 +186,6 @@ Our new value to consider is `0`, so we are finished.
 Anything that isn't a `1` in binary is necessarily a `0`, so our final binary representation of the decimal number `123` is `1111011`.
 
 
-#### Hexidecimal
-
-#### MSB, LSB
-
 ### Interpreting Status and Data Bytes
 
 A MIDI message, as mentioned previously, is a 10-bit word, where the first and last bits are framing bits providing synchronization information over an asynchronous transmission.  Concentrating on the middle 8 bits, we can tell whether a packet is a status byte or a data byte by whether its MSB (most significant bit) is a 1 or a 0.  Status bytes have a 1 as their MSB, while data bytes have a 0. The remaining 7 bits, which allow values in the range 0 - 127, account for the containing data.
